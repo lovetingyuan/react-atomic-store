@@ -1,7 +1,7 @@
 {
   "name": "react-atomic-store",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Simple React store based on useSyncExternalStore",
   "author": "tingyuan",
   "license": "MIT",
@@ -29,8 +29,7 @@
     "dist"
   ],
   "directories": {
-    "lib": "src",
-    "test": "tests"
+    "lib": "src"
   },
   "publishConfig": {
     "access": "public",
