@@ -1,5 +1,6 @@
 import { useDebugValue, useSyncExternalStore } from 'react'
 import { AtomicContextMethodsType, AtomicContextValueType, ContextOnChangeType } from './types'
+import { name } from '../package.json'
 
 export function createStore<T extends Record<string, unknown>>(
   initValue: T,
