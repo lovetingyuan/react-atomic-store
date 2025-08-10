@@ -5,6 +5,7 @@ import { name } from '../package.json'
 export function createStore<T extends Record<string, unknown>>(
   initValue: T,
   options?: {
+    name?: string
     onChange?: ContextOnChangeType<T>
   }
 ) {
@@ -45,7 +46,13 @@ export function createStore<T extends Record<string, unknown>>(
     Object.defineProperty(store, key, {
       get: function getStoreValue() {
         const value = useSyncExternalStore(subscribe, getValue)
-        useDebugValue(value, val => ({ key, value: val }))
+        useDebugValue(value, val => {
+          const debugInfo: any = { key, value: val }
+          if (options?.name) {
+            debugInfo.name = options?.name
+          }
+          return debugInfo
+        })
         return value
       },
     })

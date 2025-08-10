@@ -8,7 +8,7 @@ export type GetSetKey<K, O extends 'get' | 'set'> = K extends `${infer L}${infer
  */
 export type AtomicContextGettersType<
   T extends Record<string, unknown>,
-  K extends keyof T = keyof T,
+  K extends keyof T = keyof T
 > = {
   [k in K as GetSetKey<k, 'get'>]: () => T[k]
 }
@@ -18,7 +18,7 @@ export type AtomicContextGettersType<
  */
 export type AtomicContextSettersType<
   T extends Record<string, unknown>,
-  K extends keyof T = keyof T,
+  K extends keyof T = keyof T
 > = {
   [k in K as GetSetKey<k, 'set'>]: (
     newValue: T[k] extends (...v: infer A) => infer R
@@ -29,7 +29,7 @@ export type AtomicContextSettersType<
 
 export type AtomicContextMethodsType<
   T extends Record<string, unknown>,
-  K extends keyof T = keyof T,
+  K extends keyof T = keyof T
 > = Omit<
   AtomicContextSettersType<T, K> &
     AtomicContextGettersType<T, K> & {
