@@ -1,12 +1,10 @@
-import type React from 'react'
-
 export type GetSetKey<K, O extends 'get' | 'set'> = K extends `${infer L}${infer R}`
   ? `${O}${Uppercase<L>}${R}`
   : never
 /**
- * type of getters object according the context value.
+ * type of getters object according the store value.
  */
-export type AtomicContextGettersType<
+export type AtomicStoreGettersType<
   T extends Record<string, unknown>,
   K extends keyof T = keyof T
 > = {
@@ -14,9 +12,9 @@ export type AtomicContextGettersType<
 }
 
 /**
- * type of setters object according the context value.
+ * type of setters object according the store value.
  */
-export type AtomicContextSettersType<
+export type AtomicStoreSettersType<
   T extends Record<string, unknown>,
   K extends keyof T = keyof T
 > = {
@@ -27,70 +25,34 @@ export type AtomicContextSettersType<
   ) => void
 }
 
-export type AtomicContextMethodsType<
+/**
+ * type of getter and setters of store
+ */
+export type AtomicStoreMethodsType<
   T extends Record<string, unknown>,
   K extends keyof T = keyof T
-> = Omit<
-  AtomicContextSettersType<T, K> &
-    AtomicContextGettersType<T, K> & {
-      /** get current context value */
-      get: () => Readonly<T>
-    },
+> = Omit<AtomicStoreSettersType<T, K> & AtomicStoreGettersType<T, K>, ''>
+
+/**
+ * type of atomic store value(return type of `useStore`)
+ */
+export type AtomicStoreValueType<T extends Record<string, unknown>> = Omit<
+  T & AtomicStoreMethodsType<T>,
   ''
 >
 
 /**
- * type of atomic context value(return type of `useAtomicContext`)
+ * type of subscribeStore callback param
  */
-export type AtomicContextValueType<T extends Record<string, unknown>> = Omit<
-  T & AtomicContextMethodsType<T>,
-  ''
->
-
-/**
- * type of onChange callback which is passed to Context.
- */
-export type ContextOnChangeType<T extends Record<string, unknown>> = (
-  changeInfo: {
-    [K in keyof T]: { key: K; value: T[K]; oldValue: T[K]; trace?: unknown }
-  }[keyof T],
-  methods: AtomicContextMethodsType<T>
+export type SubscribeCallbackType<T extends Record<string, unknown>> = (
+  mutation: {
+    [K in keyof T]: { key: K; value: T[K]; oldValue: T[K] }
+  }[keyof T]
 ) => void
 
-export type ContextsType<T extends Record<string, unknown>> = {
-  [k in keyof T]: React.Context<T[k]>
+export interface CreateStoreReturnType<T extends Record<string, unknown>> {
+  useStore: () => AtomicStoreValueType<T>
+  getStoreMethods: () => AtomicStoreMethodsType<T>
+  getSnapshot: (warn?: boolean) => Readonly<T>
+  subscribeStore(callback: SubscribeCallbackType<T>): () => void
 }
-
-export interface RootValueType<T extends Record<string, unknown>> {
-  valueRef: React.RefObject<T> | null
-  onChangeRef: React.RefObject<ContextOnChangeType<T> | undefined> | null
-  contextValue: AtomicContextValueType<T> | null
-}
-
-/**
- * type of atomic context(return type of `createAtomicContext`)
- */
-export interface AtomicContextType<T extends Record<string, unknown>> {
-  (
-    props: React.ProviderProps<T> & {
-      onChange?: ContextOnChangeType<T>
-    }
-  ): React.ReactElement<React.ProviderProps<RootValueType<T>>>
-  _contexts: ContextsType<T>
-  displayName?: string
-  _RootContext: React.Context<RootValueType<T>>
-  Provider: (
-    props: React.ProviderProps<T> & {
-      onChange?: ContextOnChangeType<T>
-    }
-  ) => React.ReactElement<React.ProviderProps<RootValueType<T>>>
-  typeof: '$AtomicContext'
-}
-
-/**
- * get default value type by inferring atomic context type.
- * In general, it is sufficient to directly export the type of the initial value
- * and there is no need to use this type.
- */
-export type GetAtomicContextValueType<C extends AtomicContextType<any>> =
-  C extends AtomicContextType<infer U> ? U : never
