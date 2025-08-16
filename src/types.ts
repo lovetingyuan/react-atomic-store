@@ -51,8 +51,25 @@ export type SubscribeCallbackType<T extends Record<string, unknown>> = (
 ) => void
 
 export interface CreateStoreReturnType<T extends Record<string, unknown>> {
+  /**
+   * get store state and get/set methods
+   */
   useStore: () => AtomicStoreValueType<T>
+  /**
+   * get current store state
+   */
+  getStoreState: () => T
+  /**
+   * get current store get/set methods
+   */
   getStoreMethods: () => AtomicStoreMethodsType<T>
+  /**
+   * get readonly snapshot of current store state
+   */
   getSnapshot: (warn?: boolean) => Readonly<T>
+  /**
+   * subscribe store state change
+   * @param callback callback when store changes, receive changed key, new value and old value.
+   */
   subscribeStore(callback: SubscribeCallbackType<T>): () => void
 }

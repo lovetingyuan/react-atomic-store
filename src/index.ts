@@ -7,30 +7,33 @@ import {
 } from './types'
 import { name as libName } from '../package.json'
 
+const checkParam = (initValue: Record<string, unknown>) => {
+  if (Object.prototype.toString.call(initValue) !== '[object Object]') {
+    throw new Error(`${libName}: initValue passed to createStore must be an object.`)
+  }
+  return initValue
+}
+
 /**
  * create a global store
  * @param name name of store
  * @param initValue initial object value of store
  */
-export function createAtomicStore<T extends Record<string, unknown>>(
+export function createStore<T extends Record<string, unknown>>(
   initValue: T
 ): CreateStoreReturnType<T>
-export function createAtomicStore<T extends Record<string, unknown>>(
+export function createStore<T extends Record<string, unknown>>(
   name: string,
   initValue: T
 ): CreateStoreReturnType<T>
-export function createAtomicStore<T extends Record<string, unknown>>(
-  name: string | T,
-  initValue?: T
-) {
+export function createStore<T extends Record<string, unknown>>(name: string | T, initValue?: T) {
   let storeName = ''
   if (typeof name === 'string') {
     storeName = name
-    if (Object.prototype.toString.call(initValue) !== '[object Object]') {
-      throw new Error(`${libName}: initValue passed to createAtomicStore must be an object.`)
-    }
+    checkParam(initValue!)
     initValue = initValue!
   } else {
+    checkParam(name)
     initValue = name
   }
   const keys = Object.keys(initValue) as (keyof T)[]
@@ -73,6 +76,7 @@ export function createAtomicStore<T extends Record<string, unknown>>(
   return {
     useStore: () => store,
     getStoreMethods: () => methods,
+    getStoreState: () => snapshot,
     getSnapshot: (warn = true) => {
       if (warn) {
         console.warn(
@@ -87,7 +91,7 @@ export function createAtomicStore<T extends Record<string, unknown>>(
         subscribers.delete(callback)
       }
     },
-  }
+  } satisfies CreateStoreReturnType<T>
 }
 
 export type { AtomicStoreMethodsType, AtomicStoreValueType, SubscribeCallbackType }
