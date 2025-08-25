@@ -11,7 +11,7 @@ npm install react-atomic-store
 ```tsx
 import { createStore } from 'react-atomic-store'
 
-const useStore = createStore({ foo: 1, bar: true })
+const { useStore } = createStore({ foo: 1, bar: true })
 
 function Bar() {
   const { bar, setBar } = useStore()
@@ -41,8 +41,44 @@ function App() {
       >
         add foo
       </button>
-      <Foo />
+      <Bar />
     </div>
   )
 }
 ```
+
+### API
+
+Only one api: `createStore`
+
+```ts
+const { useStore, getStoreMethods, getStoreState, getStateSnapshot, subscribeStore } = createStore({
+  foo: 1,
+  bar: false,
+})
+```
+
+Return value of `createStore`:
+
+- `useStore`
+
+  get current store state and get/set methods
+
+  ```tsx
+  function MyComp() {
+    const { foo, setFoo, getFoo, bar, setBar, getBar } = useStore()
+    return (
+      <div
+        onClick={() => {
+          setFoo()
+        }}
+      >
+        {foo}
+      </div>
+    )
+  }
+  ```
+
+- `getStoreMethods`
+
+  get current store get/set methods

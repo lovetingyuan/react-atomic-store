@@ -66,7 +66,7 @@ export interface CreateStoreReturnType<T extends Record<string, unknown>> {
   /**
    * get readonly snapshot of current store state
    */
-  getSnapshot: (warn?: boolean) => Readonly<T>
+  getStateSnapshot: (warn?: boolean) => Readonly<T>
   /**
    * subscribe store state change
    * @param callback callback when store changes, receive changed key, new value and old value.
