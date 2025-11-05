@@ -1,87 +1,166 @@
-import { useMemo } from "react";
-import { useStore } from "../../store";
+import { getStoreMethods, useStore } from "../../store";
 import { Icon } from "@iconify/react";
-import { im } from "../../utils";
+import { cn, im } from "../../utils";
+import { AllStoreName } from "../../constant";
+import CodeBlock from "../../components/CodeBlock";
+
+const switchRecording = (storeName: string) => {
+  const { setChangeLogs, setAllChangeLogsRecording } = getStoreMethods();
+  if (storeName === AllStoreName) {
+    setAllChangeLogsRecording((v) => !v);
+    return;
+  }
+  setChangeLogs(
+    im((logs) => {
+      if (!logs[storeName]) {
+        return;
+      }
+      logs[storeName].recording = !logs[storeName].recording;
+    })
+  );
+};
 
 export default function ChangeLogs(props: { storeName: string }) {
-  const { changeLogs, initialValues, setChangeLogs } = useStore();
-
-  const maxLengthKey = useMemo(() => {
-    const keys = Object.keys(initialValues[props.storeName]);
-    let maxKey = "";
-    for (const k of keys) {
-      if (k.length > maxKey.length) {
-        maxKey = k;
+  const {
+    changeLogs,
+    setChangeLogs,
+    allChangeLogs,
+    allChangeLogsRecording,
+    setAllChangeLogs,
+  } = useStore();
+  const isAll = props.storeName === AllStoreName;
+  const { list, recording } = isAll
+    ? {
+        list: allChangeLogs,
+        recording: allChangeLogsRecording,
       }
-    }
-    return maxKey;
-  }, [initialValues[props.storeName]]);
+    : changeLogs[props.storeName] || {};
 
   return (
-    <ul className="list bg-base-100">
-      <li className="p-4 pb-2 text-xs tracking-wide">
-        Change history list:
-        <label className="swap text-xl">
-          {/* this hidden checkbox controls the state */}
-          <input type="checkbox" />
-
-          <div className="swap-on">
-            <Icon icon="material-symbols-light:screen-record"></Icon>
-          </div>
-          <div className="swap-off">😇</div>
-        </label>
-        <button
-          className="tooltip ml-2 font-normal btn btn-square btn-soft btn-xs"
-          data-tip="clear logs"
-          onClick={() => {
-            setChangeLogs(
-              im((logs) => {
-                if (logs[props.storeName]) {
-                  logs[props.storeName].length = 0;
-                }
-              }),
-            );
-          }}
-        >
+    <ul className="p-4 pt-2 bg-base-100 space-y-3">
+      <li className="pb-2 tracking-wide flex justify-between w-[90%]">
+        <div>
           <Icon
-            icon="material-symbols-light:cleaning-services"
-            width={14}
-            height={14}
-          ></Icon>
-        </button>
+            icon="material-symbols-light:manage-history"
+            className="inline align-sub mr-2"
+            width={20}
+          />
+          <span>Change history list:</span>
+        </div>
+        <div className="flex gap-2 items-center">
+          <button
+            onClick={() => {
+              switchRecording(props.storeName);
+            }}
+            className={cn(
+              "tooltip tooltip-left btn btn-ghost btn-xs btn-square font-normal",
+              !recording && "hidden"
+            )}
+            data-tip="click to stop record"
+          >
+            <Icon
+              className="text-red-500"
+              width="16"
+              icon="material-symbols-light:stop-circle"
+            ></Icon>
+          </button>
+          <button
+            onClick={() => {
+              switchRecording(props.storeName);
+            }}
+            className={cn(
+              "tooltip tooltip-left btn btn-ghost btn-xs btn-square font-normal",
+              recording && "hidden"
+            )}
+            data-tip="click to start record"
+          >
+            <Icon
+              className="text-gray-500"
+              width="16"
+              icon="material-symbols-light:screen-record"
+            ></Icon>
+          </button>
+          <button
+            className="tooltip tooltip-left font-normal btn btn-square btn-ghost btn-xs"
+            data-tip="clear logs"
+            disabled={!list.length}
+            onClick={() => {
+              if (props.storeName === AllStoreName) {
+                setAllChangeLogs([]);
+                return;
+              }
+              setChangeLogs(
+                im((logs) => {
+                  if (logs[props.storeName]) {
+                    logs[props.storeName].list.length = 0;
+                  }
+                })
+              );
+            }}
+          >
+            <Icon
+              icon="material-symbols-light:cleaning-services"
+              width={14}
+              height={14}
+            ></Icon>
+          </button>
+        </div>
       </li>
 
-      {changeLogs[props.storeName]?.length ? (
-        changeLogs[props.storeName]?.map((changeInfo, i) => {
+      {list?.length ? (
+        list.map(({ changeInfo, storeName, timestamp }, i) => {
+          // Format the timestamp as a readable string
+          const readableTime = timestamp
+            ? new Date(timestamp).toLocaleTimeString()
+            : "";
           return (
-            <li className="list-row" key={i + changeInfo.key}>
-              <div
-                className="text-base font-bold"
-                style={{
-                  width: maxLengthKey.length + "em",
-                }}
-              >
-                {changeInfo.key}
+            <li key={i + storeName + changeInfo.key}>
+              <div className="text-base font-bold my-2">
+                {isAll ? storeName + " / " + changeInfo.key : changeInfo.key}
+                <time className="font-normal text-xs text-gray-500 select-none italic">
+                  {readableTime}
+                </time>
               </div>
 
-              <div className="list-col-grow flex">
-                <div className="card bg-base-300 rounded-box grid p-4 flex-1 min-w-0">
-                  <pre>
-                    <code>{JSON.stringify(changeInfo.oldValue, null, 2)}</code>
-                  </pre>
+              <div className=" flex">
+                <CodeBlock
+                  code={JSON.stringify(changeInfo.oldValue, null, 2)}
+                  readonly
+                  className="flex-1 min-w-0"
+                ></CodeBlock>
+                <div className="divider divider-horizontal select-none">
+                  <Icon
+                    icon="material-symbols-light:line-end-arrow-rounded"
+                    className=" shrink-0"
+                    width={24}
+                  />
                 </div>
-                <div className="divider divider-horizontal">TO</div>
-                <div className="card bg-base-300 rounded-box grid p-4   flex-1  min-w-0">
-                  <pre>
-                    <code>{JSON.stringify(changeInfo.value, null, 2)}</code>
-                  </pre>
-                </div>
+                <CodeBlock
+                  code={JSON.stringify(changeInfo.value, null, 2)}
+                  readonly
+                  className="flex-1 min-w-0"
+                ></CodeBlock>
               </div>
             </li>
           );
         })
       ) : (
-        <li className="list-row font-thin text-sm">no changes</li>
+        <li className="list-row font-thin text-sm">
+          <div>
+            No changes.
+            {!recording && (
+              <p className="my-2">
+                click
+                <Icon
+                  className="text-gray-500 inline mx-1"
+                  width="16"
+                  icon="material-symbols-light:screen-record"
+                ></Icon>
+                to start record.
+              </p>
+            )}
+          </div>
+        </li>
       )}
     </ul>
   );

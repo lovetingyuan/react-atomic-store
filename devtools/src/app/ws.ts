@@ -1,6 +1,5 @@
 import { getStoreMethods } from "./store";
-import ErrorStackParser from "error-stack-parser";
-import { im } from "./utils";
+import { im, parseStackTrace } from "./utils";
 import { MenuName } from "./constant";
 
 export let wsClient: WebSocket | null = null;
@@ -25,6 +24,8 @@ export default async function connectWS() {
     setCurrentValues,
     setStoreMeta,
     setTrackUsage,
+    setAllChangeLogs,
+    getAllChangeLogsRecording,
   } = getStoreMethods();
   wsClient.addEventListener("message", (evt) => {
     console.log("receive message", evt.data);
@@ -33,57 +34,73 @@ export default async function connectWS() {
       setInitialValues(
         im((vals) => {
           vals[payload.storeName] = payload.initValue;
-        }),
+        })
       );
       setCurrentValues(
         im((vals) => {
-          vals[payload.storeName] = payload.initValue;
-        }),
+          vals[payload.storeName] = payload.snapshot ?? payload.initValue;
+        })
       );
       setStoreMeta(
         im((vals) => {
-          const err = new Error();
-          err.stack = payload.stack;
-          const parsed = ErrorStackParser.parse(err);
-          let source = "";
-          if (parsed[1]?.fileName) {
-            const path = new URL(parsed[1].fileName).pathname;
-            source = path; // `${path}:${parsed[1].lineNumber}:${parsed[1].columnNumber}`;
-          }
+          const { filePath } = parseStackTrace(payload.stack, "store");
           vals[payload.storeName] = {
-            source,
-            activeMenu: MenuName.currentStoreValue,
+            source: filePath,
+            activeMenu: MenuName.storeValue,
           };
-        }),
+        })
+      );
+      setChangeLogs(
+        im((logs) => {
+          logs[payload.storeName] = { list: [], recording: false };
+        })
       );
     } else if (action === "changeStore") {
       setChangeLogs(
         im((changes) => {
-          changes[payload.storeName] ??= [];
-          changes[payload.storeName].push(payload.changeInfo);
-        }),
+          if (changes[payload.storeName].recording) {
+            // const { filePath, functionName } = parseStackTrace(
+            //   payload.stack,
+            //   "mutation"
+            // );
+            changes[payload.storeName].list.push(payload);
+          }
+        })
+      );
+      setAllChangeLogs(
+        im((logs) => {
+          if (getAllChangeLogsRecording()) {
+            logs.push(payload);
+          }
+        })
       );
       setCurrentValues(
         im((vals) => {
           const { key, value } = payload.changeInfo;
           vals[payload.storeName][key] = value;
-        }),
+        })
       );
     } else if (action === "trackPropertyUsage") {
       setTrackUsage(
         im((usage) => {
           usage[payload.storeName] ??= {};
           const deps = (usage[payload.storeName][payload.keyName] ??= []);
-          const err = new Error();
-          err.stack = payload.component;
-          const [{ fileName }] = ErrorStackParser.parse(err);
-          if (fileName) {
-            const { pathname } = new URL(fileName);
-            if (pathname && !deps.includes(pathname)) {
-              deps.push(pathname);
-            }
+          const { filePath, functionName } = parseStackTrace(
+            payload.stack,
+            "property"
+          );
+          if (
+            filePath &&
+            !deps.find(
+              (v) => v.filePath === filePath && v.functionName === functionName
+            )
+          ) {
+            deps.push({
+              filePath,
+              functionName,
+            });
           }
-        }),
+        })
       );
     }
   });

@@ -1,6 +1,6 @@
-import { createStore } from 'react-atomic-store'
+import { createStore } from "react-atomic-store";
 
-export const { useStore, subscribeStore } = createStore('appStore', {
+export const { useStore, subscribeStore } = createStore("appStore", {
   /**
    * count value
    */
@@ -9,8 +9,8 @@ export const { useStore, subscribeStore } = createStore('appStore', {
     foo1: 1,
     foo2: 2,
   },
-})
+});
 
 subscribeStore(({ key, value, oldValue }) => {
-  console.log('store change:', key, value, oldValue)
-})
+  console.log("store change:", key, value, oldValue);
+});

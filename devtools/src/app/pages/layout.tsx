@@ -1,8 +1,25 @@
 import { Icon } from "@iconify/react";
+import { useEffect } from "react";
 import { Link } from "react-router";
 import { Outlet } from "react-router";
 
 export default function Home() {
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      return;
+    }
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+      return "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, []);
   return (
     <div className="flex flex-col h-dvh">
       <div className="navbar bg-base-300 shadow-sm p-4 h-12 min-h-12">
@@ -10,7 +27,7 @@ export default function Home() {
           <Link to="/" className="flex items-center gap-2">
             <Icon
               icon="eos-icons:atom-electron"
-              className="text-[rgb(8,126,164)]"
+              className="text-primary"
               width={24}
               height={24}
             ></Icon>

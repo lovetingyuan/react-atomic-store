@@ -1,12 +1,12 @@
-import js from '@eslint/js'
-import globals from 'globals'
-import reactHooks from 'eslint-plugin-react-hooks'
-import reactRefresh from 'eslint-plugin-react-refresh'
-import tseslint from 'typescript-eslint'
-import { globalIgnores, defineConfig } from 'eslint/config'
-import nodePlugin from 'eslint-plugin-n'
-import * as regexpPlugin from 'eslint-plugin-regexp'
-import sonarjs from 'eslint-plugin-sonarjs'
+import js from '@eslint/js';
+import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
+import reactRefresh from 'eslint-plugin-react-refresh';
+import tseslint from 'typescript-eslint';
+import { globalIgnores, defineConfig } from 'eslint/config';
+import nodePlugin from 'eslint-plugin-n';
+import * as regexpPlugin from 'eslint-plugin-regexp';
+import sonarjs from 'eslint-plugin-sonarjs';
 
 export default defineConfig([
   globalIgnores(['dist']),
@@ -29,20 +29,19 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
       parserOptions: {
-        tsconfigRootDir: __dirname,
+        tsconfigRootDir: typeof __dirname === 'string' ? __dirname : import.meta.dirname,
       },
     },
   },
   {
     files: ['src/server/**/*.{js,ts}', 'scripts/**/*.{js,ts}'],
-    extends: [
-      js.configs.recommended,
-      tseslint.configs.recommended,
-      nodePlugin.configs['flat/recommended-script'],
-    ],
+    extends: [js.configs.recommended, tseslint.configs.recommended, nodePlugin.configs['flat/recommended-script']],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.nodeBuiltin,
+      parserOptions: {
+        tsconfigRootDir: typeof __dirname === 'string' ? __dirname : import.meta.dirname,
+      },
     },
     rules: {
       'n/no-missing-import': 'off',
@@ -53,4 +52,4 @@ export default defineConfig([
       curly: 'error',
     },
   },
-])
+]);

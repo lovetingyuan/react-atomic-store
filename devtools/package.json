@@ -30,11 +30,11 @@
     "@hono/vite-dev-server": "^0.20.0",
     "@iconify/react": "^6.0.2",
     "@tailwindcss/vite": "^4.1.11",
-    "@types/node": "^24.0.4",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@types/ws": "^8.18.1",
-    "@vitejs/plugin-react": "^5.1.0",
+    "babel-plugin-react-compiler": "^1.0.0",
+    "code-position": "^1.0.0",
     "daisyui": "^5.0.46",
     "eslint": "^9.29.0",
     "eslint-plugin-n": "^17.21.0",
@@ -44,8 +44,6 @@
     "eslint-plugin-sonarjs": "^3.0.4",
     "globals": "^16.2.0",
     "tailwindcss": "^4.1.11",
-    "typescript": "~5.8.3",
-    "typescript-eslint": "^8.34.1",
-    "vite": "^7.0.5"
+    "typescript-eslint": "^8.34.1"
   }
 }

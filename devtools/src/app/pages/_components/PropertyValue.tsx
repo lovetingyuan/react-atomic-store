@@ -1,8 +1,9 @@
-import { Link } from "react-router";
 import { useStore } from "../../store";
 import { wsClient } from "../../ws";
 // import Editor from "@monaco-editor/react";
-import CodeBlock from "./CodeBlock";
+import CodeBlock from "../../components/CodeBlock";
+import CopyButton from "../../components/CopyButton";
+import Collapse from "../../components/Collapse";
 
 export default function PropertyValue(props: {
   keyName: string;
@@ -17,11 +18,8 @@ export default function PropertyValue(props: {
       <details className="collapse block collapse-arrow bg-base-100 border-base-300 border">
         <summary className="collapse-title font-semibold text-sm select-none">
           Initial value
-        </summary>
-        <div className="collapse-content text-sm">
-          <CodeBlock code={JSON.stringify(initValue, null, 2)} readonly />
           <button
-            className="btn btn-soft btn-sm float-right my-4"
+            className="btn btn-soft btn-xs mx-5"
             onClick={() => {
               wsClient?.send(
                 JSON.stringify({
@@ -31,70 +29,58 @@ export default function PropertyValue(props: {
                     keyName: props.keyName,
                   },
                   source: "devtools",
-                }),
+                })
               );
             }}
           >
             reset to initial value
           </button>
-        </div>
-      </details>
-      <details
-        className="collapse block collapse-arrow bg-base-100 border-base-300 border"
-        open
-      >
-        <summary className="collapse-title font-semibold text-sm select-none">
-          Current value
         </summary>
         <div className="collapse-content text-sm">
-          {/*<div className="mockup-code w-full">
-            <pre>
-              <code>{JSON.stringify(currentValue, null, 2)}</code>
-            </pre>
-          </div>*/}
-          {/*<Editor
-            height="20vh"
-            defaultLanguage="javascript"
-            value={"(" + JSON.stringify(currentValue, null, 2) + ")"}
-          />*/}
-          <CodeBlock
-            code={JSON.stringify(currentValue, null, 2)}
-            onSave={(data) => {
-              wsClient?.send(
-                JSON.stringify({
-                  action: "change-store-property",
-                  payload: {
-                    storeName: props.storeName,
-                    keyName: props.keyName,
-                    value: data,
-                  },
-                  source: "devtools",
-                }),
-              );
-            }}
-          />
+          <CodeBlock code={JSON.stringify(initValue, null, 2)} readonly />
         </div>
       </details>
-      <details className="collapse block collapse-arrow bg-base-100 border-base-300 border">
-        <summary className="collapse-title font-semibold text-sm select-none">
-          Component usage
-        </summary>
-        <div className="collapse-content text-sm">
-          <ul>
-            {deps?.length ? (
-              deps.map((c) => {
-                return (
-                  <li key="c">
-                    <code>{c}</code>
-                  </li>
-                );
+      <Collapse title={"Current value"}>
+        <CodeBlock
+          code={JSON.stringify(currentValue, null, 2)}
+          readonly
+          onSave={(data) => {
+            wsClient?.send(
+              JSON.stringify({
+                action: "change-store-property",
+                payload: {
+                  storeName: props.storeName,
+                  keyName: props.keyName,
+                  value: data,
+                },
+                source: "devtools",
               })
-            ) : (
-              <p className="opacity-70">No usage found</p>
-            )}
-          </ul>
-        </div>
-      </details>
+            );
+          }}
+        />
+      </Collapse>
+      <Collapse title="Component usage">
+        <ul className="list-disc list-inside">
+          {deps?.length ? (
+            deps.map((dep, i) => {
+              return (
+                <li key={i}>
+                  <code>
+                    {dep.filePath} (<i>{dep.functionName}</i>)
+                  </code>
+                  <CopyButton
+                    content={dep.filePath}
+                    tipText="copy file path"
+                    tipClassname="ml-1 tooltip-top"
+                  />
+                </li>
+              );
+            })
+          ) : (
+            <p className="opacity-70">No usage found</p>
+          )}
+        </ul>
+      </Collapse>
     </div>
   );
 }

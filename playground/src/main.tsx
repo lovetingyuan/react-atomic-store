@@ -2,18 +2,18 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
-import { createStore } from "../../dist/index";
-import FooBar from "./components/FooBar/index.tsx";
+import { createStore } from "react-atomic-store";
+import { FooBar } from "./components/FooBar";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <p>React: {React.version}</p>
     <App />
     <FooBar />
-  </React.StrictMode>,
+  </React.StrictMode>
 );
 
-createStore("barStore", {
+createStore("bar33Store", {
   aa: 1,
   bb: 1,
   cc: 1,

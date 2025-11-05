@@ -1,6 +1,11 @@
-import { useStore } from "../../store";
+import { useStore } from '../../store';
 
-export default function FooBar() {
+export function FooBar() {
   const { count } = useStore();
   return <p>foobar: {count}</p>;
+}
+
+export function FooBar2() {
+  const { count } = useStore();
+  return <p>foobar2: {count}</p>;
 }

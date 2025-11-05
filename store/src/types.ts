@@ -47,7 +47,8 @@ export type AtomicStoreValueType<T extends Record<string, unknown>> = Omit<
 export type SubscribeCallbackType<T extends Record<string, unknown>> = (
   mutation: {
     [K in keyof T]: { key: K; value: T[K]; oldValue: T[K] }
-  }[keyof T]
+  }[keyof T],
+  stack?: string
 ) => void
 
 export interface CreateStoreReturnType<T extends Record<string, unknown>> {

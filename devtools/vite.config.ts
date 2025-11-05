@@ -1,23 +1,24 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import nodeAdapter from '@hono/vite-dev-server/node'
-import devServer, { defaultOptions } from '@hono/vite-dev-server'
-import buildHono from '@hono/vite-build/node'
-import tailwindcss from '@tailwindcss/vite'
-import { execSync } from 'child_process'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import nodeAdapter from '@hono/vite-dev-server/node';
+import devServer, { defaultOptions } from '@hono/vite-dev-server';
+import buildHono from '@hono/vite-build/node';
+import tailwindcss from '@tailwindcss/vite';
+import { execSync } from 'child_process';
+import codePositionPlugin from 'code-position';
 
-process.env.VITE_BUILD_TIME = new Date().toLocaleString()
+process.env.VITE_BUILD_TIME = new Date().toLocaleString();
 try {
   // eslint-disable-next-line sonarjs/no-os-command-from-path
-  process.env.VITE_GIT_HASH = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim()
+  process.env.VITE_GIT_HASH = execSync('git rev-parse --short HEAD', { encoding: 'utf8' }).trim();
 } catch {
-  console.warn('Can not get Git Hash')
+  console.warn('Can not get Git Hash');
 }
 
 const config = defineConfig(({ command, mode }) => {
-  console.log('command:', command, 'mode:', mode, 'env:', process.env.NODE_ENV)
-  const port = Number(process.env.PORT) || 3005
-  const isHonoBuild = command === 'build' && mode === 'hono'
+  console.log('command:', command, 'mode:', mode, 'env:', process.env.NODE_ENV);
+  const port = Number(process.env.PORT) || 3005;
+  const isHonoBuild = command === 'build' && mode === 'hono';
   return {
     server: {
       port,
@@ -34,10 +35,10 @@ const config = defineConfig(({ command, mode }) => {
     plugins: [
       react({
         babel: {
-          plugins:
-            process.env.NODE_ENV === 'development'
-              ? ['./scripts/babel-plugin-relative-path.js']
-              : [],
+          plugins: [
+            process.env.NODE_ENV === 'development' ? codePositionPlugin : null,
+            ['babel-plugin-react-compiler'],
+          ].filter((v) => !!v),
         },
       }),
       tailwindcss(),
@@ -47,7 +48,7 @@ const config = defineConfig(({ command, mode }) => {
         exclude: ['!/api/**', ...defaultOptions.exclude],
         entry: './src/server/index.ts',
         handleHotUpdate(ctx) {
-          return ctx.modules // avoid default full reload
+          return ctx.modules; // avoid default full reload
         },
       }),
       isHonoBuild &&
@@ -59,7 +60,7 @@ const config = defineConfig(({ command, mode }) => {
           port,
         }),
     ],
-  }
-})
+  };
+});
 
-export default config
+export default config;

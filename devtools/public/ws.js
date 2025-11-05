@@ -1,6 +1,15 @@
 async function main() {
   const clientId = crypto.randomUUID();
-  const wsUri = "ws://localhost:3006/user_app?id=" + clientId;
+  // console.log(9999, import.meta.url);
+  const baseUrl = new URL(document.currentScript.src);
+  const { code, data } = await fetch(baseUrl.origin + "/api/init-ws", {
+    method: "POST",
+  }).then((r) => r.json());
+  if (code !== 0) {
+    alert("Failed to connect to react-atomic-store devtools server");
+    return;
+  }
+  const wsUri = `ws://localhost:${data.port}/user_app?id=${clientId}`;
   const source = "devapps"; // + clientId;
 
   const websocket = new WebSocket(wsUri);
@@ -25,17 +34,32 @@ async function main() {
   websocket.addEventListener("message", (e) => {
     const { action, payload } = JSON.parse(e.data);
     if (action === "reload-app") {
-      location.reload();
+      // location.reload();
+      for (const storeName in devtools.stores) {
+        const { initValue, stack, snapshot } = devtools.stores[storeName];
+        websocket.send(
+          JSON.stringify({
+            action: "createStore",
+            payload: {
+              storeName,
+              initValue,
+              stack,
+              snapshot,
+            },
+            source: "userApp",
+          })
+        );
+      }
     } else if (action === "change-store-property") {
       const { storeName, keyName, value } = payload;
       const key = `${keyName[0].toUpperCase()}${keyName.slice(1)}`;
-      __REACT_ATOMIC_STORE_DEV_TOOLS__.methods[storeName][`set${key}`](value);
+      const { methods } = devtools.stores[storeName];
+      methods[`set${key}`](value);
     } else if (action === "reset-store-property") {
       const { storeName, keyName } = payload;
       const key = `${keyName[0].toUpperCase()}${keyName.slice(1)}`;
-      const initVal =
-        __REACT_ATOMIC_STORE_DEV_TOOLS__.initialValues[storeName][keyName];
-      __REACT_ATOMIC_STORE_DEV_TOOLS__.methods[storeName][`set${key}`](initVal);
+      const { initValue, methods } = devtools.stores[storeName];
+      methods[`set${key}`](initValue[keyName]);
     }
   });
 
@@ -44,10 +68,9 @@ async function main() {
     connected = false;
   });
 
-  window.__REACT_ATOMIC_STORE_DEV_TOOLS__ = {
+  const devtools = (window.__REACT_ATOMIC_STORE_DEV_TOOLS__ = {
     enabled: true,
-    methods: {},
-    initialValues: {},
+    stores: {},
     send(action, payload) {
       if (!connected) {
         messagesQueue.push({ source, action, payload });
@@ -57,11 +80,12 @@ async function main() {
             action,
             payload,
             source,
-          }),
+          })
         );
         // console.log("send", { action, payload });
       }
     },
-  };
+  });
 }
+
 main();
