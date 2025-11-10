@@ -1,4 +1,4 @@
-import { createBrowserRouter, type RouteObject } from "react-router";
+import { type RouteObject } from "react-router";
 import React from "react";
 
 const PageKey = Symbol("page");
@@ -55,6 +55,7 @@ Object.keys(pages).map((file) => {
   map[key] = pages[file];
 });
 // console.log(pagesMap)
+console.log(9999, import.meta.url, pages, pagesMap);
 /**
  * 接受当前路由名称，路由配置，以及父级路由数组
  */
@@ -104,11 +105,12 @@ function buildRoute(
 // console.log('routes', pagesMap)
 const routes = buildRoute("/", pagesMap["/"]);
 
-if (notFound["./pages/404.tsx"]) {
+if (notFound["../pages/404.tsx"]) {
   routes.push({
     path: "*",
-    Component: React.lazy(notFound["./pages/404.tsx"]),
+    Component: React.lazy(notFound["../pages/404.tsx"]),
   });
 }
-// console.log(routes)
-export const router = createBrowserRouter(routes);
+export default routes;
+// console.log(routes, notFound);
+// export const router = createBrowserRouter(routes);

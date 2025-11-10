@@ -7,7 +7,8 @@
     "devtools",
     "playground",
     "store",
-    "code-position"
+    "code-position",
+    "vite-plugin-convention-route"
   ],
   "homepage": "https://github.com/lovetingyuan/react-atomic-store#readme",
   "repository": {
@@ -21,12 +22,14 @@
     "playground": "npm run dev --workspace playground",
     "devtools": "npm run dev --workspace devtools",
     "build:store": "npm run build --workspace react-atomic-store",
-    "build:devtools": "npm run build --workspace devtools"
+    "build:devtools": "npm run build --workspace devtools",
+    "build:route": "npm run build --workspace vite-plugin-convention-route"
   },
   "devDependencies": {
     "typescript": "~5.9.0",
     "@types/node": "^22.17.0",
     "vite": "npm:rolldown-vite@latest",
-    "@vitejs/plugin-react": "^5.1.0"
+    "@vitejs/plugin-react": "^5.1.0",
+    "tsup": "^8.5.0"
   }
 }

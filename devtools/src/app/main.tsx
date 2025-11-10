@@ -1,8 +1,12 @@
 import "./ws";
-import { RouterProvider } from "react-router";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import ReactDOM from "react-dom/client";
 
-import { router } from "./lib/route";
+// import routes from "./lib/route";
+import routes from "virtual:route?routePath=/src/app/pages";
+
+console.log(9999, routes);
+const router = createBrowserRouter(routes);
 
 const root = document.getElementById("root");
 

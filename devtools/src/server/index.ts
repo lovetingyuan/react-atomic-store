@@ -1,94 +1,97 @@
-import { Hono } from "hono";
-import { existsSync } from "fs";
-import { readFile } from "fs/promises";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-import { api } from "./app"; // 确保正确导入你的 API 路由
+import { Hono } from 'hono'
+import { existsSync } from 'fs'
+import { readFile } from 'fs/promises'
+import { join, dirname } from 'path'
+import { fileURLToPath } from 'url'
+import { api } from './app' // 确保正确导入你的 API 路由
+import { cors } from 'hono/cors'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
 
-const app = new Hono();
+const app = new Hono()
 
 // 定义静态文件扩展名
 const staticExtensions = [
-  ".js",
-  ".css",
-  ".png",
-  ".jpg",
-  ".jpeg",
-  ".gif",
-  ".svg",
-  ".ico",
-  ".woff",
-  ".woff2",
-  ".ttf",
-  ".eot",
-  ".json",
-  ".xml",
-  ".txt",
-  ".mp3",
-  ".mp4",
-  ".map",
-  ".webmanifest",
-];
+  '.js',
+  '.css',
+  '.png',
+  '.jpg',
+  '.jpeg',
+  '.gif',
+  '.svg',
+  '.ico',
+  '.woff',
+  '.woff2',
+  '.ttf',
+  '.eot',
+  '.json',
+  '.xml',
+  '.txt',
+  '.mp3',
+  '.mp4',
+  '.map',
+  '.webmanifest',
+]
 
 // 中间件：日志记录
-app.use("*", async (c, next) => {
-  if (process.env.NODE_ENV === "development") {
-    console.log(`[Hono]: ${c.req.method} ${c.req.url}`);
+app.use('*', async (c, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Hono]: ${c.req.method} ${c.req.url}`)
   }
-  await next();
-});
+  await next()
+})
 
-app.get("/api/health", (c) => {
-  return c.json({ status: "ok", timestamp: new Date().toISOString() });
-});
+app.use('/api/*', cors())
+
+app.get('/api/health', c => {
+  return c.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
 
 // 1. 优先处理 API 路由
-app.route("/api", api);
+app.route('/api', api)
 
 // 2. 静态文件处理，hono的vite插件已经处理了静态文件的服务
 
 // 返回客户端js
 
 // 3. SPA 路由回退处理
-app.get("*", async (c) => {
-  const path = c.req.path;
+app.get('*', async c => {
+  const path = c.req.path
 
   // 再次检查是否为静态文件（防止遗漏）
-  const hasStaticExtension = staticExtensions.some((ext) => path.endsWith(ext));
+  const hasStaticExtension = staticExtensions.some(ext => path.endsWith(ext))
 
   if (hasStaticExtension) {
     // 静态文件已经在上面处理过了，如果到这里说明文件不存在
-    return c.notFound();
+    return c.notFound()
   }
 
   // SPA 回退到 index.html
 
-  const indexPath = join(__dirname, "index.html");
+  const indexPath = join(__dirname, 'index.html')
 
   if (!existsSync(indexPath)) {
-    throw new Error(`index.html not found at ${indexPath}`);
+    throw new Error(`index.html not found at ${indexPath}`)
   }
 
   // 读取并返回 index.html
-  const content = await readFile(indexPath, "utf-8");
+  const content = await readFile(indexPath, 'utf-8')
 
   return c.html(content, 200, {
-    "Cache-Control": "no-cache, no-store, must-revalidate",
-  });
-});
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+  })
+})
 
 // 错误处理
 app.onError((err, c) => {
-  console.error("Server error:", err);
-  return c.text("Internal Server Error, " + err.message, 500);
-});
+  console.error('Server error:', err)
+  return c.text('Internal Server Error, ' + err.message, 500)
+})
 
 // 404 处理
-app.notFound((c) => {
-  return c.text("Not Found", 404);
-});
+app.notFound(c => {
+  return c.text('Not Found', 404)
+})
 
-export default app;
+export default app
