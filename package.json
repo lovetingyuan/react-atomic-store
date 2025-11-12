@@ -7,8 +7,7 @@
     "devtools",
     "playground",
     "store",
-    "code-position",
-    "vite-plugin-convention-route"
+    "code-position"
   ],
   "homepage": "https://github.com/lovetingyuan/react-atomic-store#readme",
   "repository": {
